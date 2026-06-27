@@ -1,0 +1,22 @@
+# ESP-IDF build output
+/build/
+
+# Managed components are fetched from the ESP Component Registry on build
+# (versions are pinned by dependencies.lock, which IS committed)
+/managed_components/
+
+# Generated sdkconfig — regenerated from sdkconfig.defaults
+/sdkconfig
+/sdkconfig.old
+/sdkconfig.ci
+
+# Logs and scratch
+*.log
+
+# Editor / OS cruft
+.DS_Store
+.vscode/
+.idea/
+
+# Local agent / tooling settings
+/.claude/

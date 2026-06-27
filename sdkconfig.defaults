@@ -1,0 +1,26 @@
+CONFIG_IDF_TARGET="esp32c6"
+
+# Flash: 4MB-safe so it flashes on both 4MB and 8MB C6 modules
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# This ST7789 panel expects byte-swapped RGB565
+CONFIG_LV_COLOR_16_SWAP=y
+
+# Fonts used by the UI
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_20=y
+CONFIG_LV_FONT_DEFAULT_MONTSERRAT_14=y
+
+# Drawing primitives the dolphin canvas needs
+CONFIG_LV_USE_CANVAS=y
+
+# LVGL heap (canvas buffer is static, so default heap is plenty)
+CONFIG_LV_MEM_SIZE_KILOBYTES=48
+
+# A little more main-task stack headroom for setup
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=6144
