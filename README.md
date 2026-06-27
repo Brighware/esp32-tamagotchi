@@ -1,13 +1,24 @@
-# 🐬 Dolphin Tamagotchi — ESP32-C6-Touch-LCD-1.47
+# ⌚ TamaWatchy — a smartwatch with a dolphin pet — ESP32-C6-Touch-LCD-1.47
 
-A tiny virtual-pet game for the **Waveshare ESP32-C6-Touch-LCD-1.47** (172×320 IPS,
-JD9853 display + AXS5106L capacitive touch). Raise your own dolphin: feed it,
-play with it, put it to sleep and keep it clean using small on-screen touch
-buttons. Built with **ESP-IDF + LVGL v8**. The dolphin is drawn entirely in
-software (no image assets) and animates in real time; the pet's state survives
-power-offs via NVS.
+A tiny **smartwatch** for the **Waveshare ESP32-C6-Touch-LCD-1.47** (172×320 IPS,
+JD9853 display + AXS5106L capacitive touch). The home screen is an **analog
+watchface**; **press and hold** anywhere to open an **app drawer**, then tap
+**TamaWatchy** to launch a software-rendered dolphin virtual pet. Built with
+**ESP-IDF + LVGL v8**, no image assets — everything (clock hands, dolphin, UI) is
+drawn in code. Clock and pet state persist across power-offs via NVS.
 
-## First boot — name your dolphin
+## Watch shell & navigation
+
+- **Watchface (home)** — an analog clock with moving hour/minute/second hands, a
+  date readout, and a "hold for apps" hint. The time runs off the ESP32 system
+  clock (no RTC chip on this board) and is persisted to NVS.
+- **Long-press** anywhere on the watchface → **app drawer**.
+- **App drawer** — tap the **TamaWatchy** tile to launch the pet; **long-press**
+  to go back to the watchface.
+- **Inside TamaWatchy** — **long-press** (on the background/dolphin, not a button)
+  to exit back to the watchface. The pet keeps living between visits.
+
+## First TamaWatchy launch — name your dolphin
 
 On the very first run (empty NVS) an arcade-style name picker appears: use `<` / `>`
 to cycle the current letter, **Add** to append it, **Del** to backspace, and **OK**
@@ -107,8 +118,10 @@ CMakeLists.txt                    top-level project
 partitions.csv                    4MB-safe table (3MB app partition)
 sdkconfig.defaults                esp32c6 target, LVGL fonts, color-swap, flash size
 main/
-  main.c                          SPI + panel + touch + LVGL bring-up, hands off to the game
-  tamagotchi.c/.h                 game logic, stats, UI, NVS persistence, timers
+  main.c                          SPI + panel + touch + LVGL bring-up, starts the watch shell
+  watch.c/.h                      watch shell: analog watchface + app drawer + navigation
+  clock.c/.h                      shared software clock (system time + NVS persistence)
+  tamagotchi.c/.h                 TamaWatchy app: game logic, stats, UI, NVS, timers
   dolphin.c/.h                    software-drawn animated dolphin (LVGL canvas)
 components/esp_bsp/               trimmed Waveshare BSP: display(JD9853), touch, i2c, spi
 components/esp_lcd_jd9853/        JD9853 display driver (vendored from Waveshare demo)

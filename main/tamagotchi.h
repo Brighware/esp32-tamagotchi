@@ -5,8 +5,13 @@
 extern "C" {
 #endif
 
-/* Build the UI and start the game. Call with the LVGL lock held. */
-void tamagotchi_start(void);
+/* Launch the TamaWatchy app: builds its UI and starts its timers on the active
+ * screen (which the caller has cleaned). Call with the LVGL lock held. */
+void tamagotchi_open(void);
+
+/* Tear the app down: stop timers, release the dolphin canvas, save the pet.
+ * The caller is responsible for clearing the screen afterwards. */
+void tamagotchi_close(void);
 
 #ifdef __cplusplus
 }

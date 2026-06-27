@@ -24,7 +24,7 @@
 #include "bsp_i2c.h"
 #include "bsp_spi.h"
 
-#include "tamagotchi.h"
+#include "watch.h"
 
 #define EXAMPLE_DISPLAY_ROTATION 0
 #define EXAMPLE_LCD_H_RES (172)
@@ -111,9 +111,9 @@ void app_main(void)
     bsp_display_brightness_init();
     bsp_display_set_brightness(100);
 
-    ESP_LOGI(TAG, "Starting Dolphin Tamagotchi");
+    ESP_LOGI(TAG, "Starting TamaWatchy watch shell");
     if (lvgl_port_lock(0)) {
-        tamagotchi_start();
+        watch_start();
         lvgl_port_unlock();
     }
 }

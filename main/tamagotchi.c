@@ -14,11 +14,12 @@
  */
 #include "tamagotchi.h"
 #include "dolphin.h"
+#include "clock.h"
+#include "watch.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h>
 #include <stdint.h>
 
 #include "lvgl.h"
@@ -54,7 +55,6 @@ typedef struct {
     uint8_t  feed_count;                  /* feeds since last poop           */
     uint8_t  poop;                        /* messes on the sea floor         */
     uint8_t  muscle;                      /* 0..100 fitness/"ripped" build   */
-    int64_t  epoch;                       /* persisted wall-clock seconds    */
 } pet_state_t;
 
 static pet_state_t pet;
@@ -93,24 +93,6 @@ static void start_game(void);
 static void show_name_entry(void);
 static void show_death(void);
 static void stop_game_timers(void);
-
-/* ---- clock ------------------------------------------------------------ */
-static int64_t clock_default_epoch(void)
-{
-    struct tm t0 = {0};
-    t0.tm_year = 2026 - 1900; t0.tm_mon = 5; t0.tm_mday = 27;
-    t0.tm_hour = 12; t0.tm_min = 0; t0.tm_isdst = 0;
-    return (int64_t)mktime(&t0);
-}
-static void clock_set(int64_t epoch)
-{
-    struct timeval tv = { .tv_sec = (time_t)epoch, .tv_usec = 0 };
-    settimeofday(&tv, NULL);
-}
-static int64_t clock_now(void)
-{
-    time_t n; time(&n); return (int64_t)n;
-}
 
 /* ---- helpers ---------------------------------------------------------- */
 static uint8_t clamp_add(uint8_t v, int delta)
@@ -165,7 +147,6 @@ static void pet_reset(const char *name)
     pet.strain = 0; pet.dead = 0;
     pet.level = 1; pet.xp = 0;
     for (int i = 0; i < SK_COUNT; i++) { pet.skill_lvl[i] = 1; pet.skill_xp[i] = 0; }
-    pet.epoch = clock_default_epoch();
 }
 
 static bool pet_load(void)
@@ -189,7 +170,6 @@ static bool pet_load(void)
 
 static void pet_save(void)
 {
-    pet.epoch = clock_now();
     nvs_handle_t h;
     if (nvs_open(NVS_NS, NVS_READWRITE, &h) == ESP_OK) {
         nvs_set_blob(h, NVS_KEY, &pet, sizeof(pet));
@@ -391,9 +371,7 @@ static void panel_close_cb(lv_event_t *e)
 static void time_adj_cb(lv_event_t *e)
 {
     int delta = (int)(intptr_t)lv_event_get_user_data(e);
-    clock_set(clock_now() + delta);
-    pet.epoch = clock_now();
-    pet_save();
+    clock_adjust(delta);
     panel_update();
     refresh_ui();
 }
@@ -671,7 +649,6 @@ static void stop_game_timers(void)
 
 static void start_game(void)
 {
-    clock_set(pet.epoch);
     dolphin_set_dead(0);
     build_ui();
     base_mood = compute_base_mood();
@@ -828,11 +805,21 @@ static void show_name_entry(void)
 }
 
 /* ---- entry point ------------------------------------------------------ */
-void tamagotchi_start(void)
+/* ---- app lifecycle ---------------------------------------------------- */
+void tamagotchi_open(void)
 {
     if (pet_load()) {
         start_game();
+        if (pet.dead) show_death();   /* resume straight to the grave */
     } else {
         show_name_entry();
     }
+}
+
+void tamagotchi_close(void)
+{
+    stop_game_timers();
+    dolphin_forget();
+    if (panel) { lv_obj_del(panel); panel = NULL; }
+    if (pet.magic == STATE_MAGIC) pet_save();
 }
