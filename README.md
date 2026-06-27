@@ -1,81 +1,30 @@
-# ⌚ TamaWatchy — a smartwatch with a dolphin pet — ESP32-C6-Touch-LCD-1.47
+# ⌚ TamaWatchy
 
-A tiny **smartwatch** for the **Waveshare ESP32-C6-Touch-LCD-1.47** (172×320 IPS,
-JD9853 display + AXS5106L capacitive touch). The home screen is an **analog
-watchface**; **press and hold** anywhere to open an **app drawer**, then tap
-**TamaWatchy** to launch a software-rendered dolphin virtual pet. Built with
-**ESP-IDF + LVGL v8**, no image assets — everything (clock hands, dolphin, UI) is
-drawn in code. Clock and pet state persist across power-offs via NVS.
+A tiny **smartwatch** firmware for the **Waveshare ESP32-C6-Touch-LCD-1.47** with a
+software-rendered **dolphin virtual pet** as its headline app.
 
-## Watch shell & navigation
+The home screen is an **analog watchface**. Press and hold to open an **app
+drawer**, then tap **TamaWatchy** to raise a dolphin — feed it, train it, keep its
+tank clean, watch it level up, get fat, get ripped… or die of obesity if you spoil
+it rotten.
 
-- **Watchface (home)** — an analog clock with moving hour/minute/second hands, a
-  date readout, and a "hold for apps" hint. The time runs off the ESP32 system
-  clock (no RTC chip on this board) and is persisted to NVS.
-- **Long-press** anywhere on the watchface → **app drawer**.
-- **App drawer** — tap the **TamaWatchy** tile to launch the pet; **long-press**
-  to go back to the watchface.
-- **Inside TamaWatchy** — **long-press** (on the background/dolphin, not a button)
-  to exit back to the watchface. The pet keeps living between visits.
+Built with **ESP-IDF v5.4 + LVGL v8**. There are **no image assets** — every pixel
+(clock hands, the dolphin, every animation) is drawn in code. Clock and pet state
+survive power-offs via NVS.
 
-## First TamaWatchy launch — name your dolphin
+---
 
-On the very first run (empty NVS) an arcade-style name picker appears: use `<` / `>`
-to cycle the current letter, **Add** to append it, **Del** to backspace, and **OK**
-to confirm (empty name defaults to "Finn"). The name is saved and used everywhere.
+## Hardware
 
-## Gameplay
+**Waveshare ESP32-C6-Touch-LCD-1.47** — a 172×320 IPS touch display board:
 
-Four stats decay over real time:
+| Part | Chip | Bus |
+|------|------|-----|
+| MCU | ESP32-C6 (RISC-V, Wi-Fi 6 / BLE) | — |
+| Display | JD9853, 172×320, color-inverted | SPI2 @ 80 MHz |
+| Touch | AXS5106L (addr 0x63) | I²C0 @ 400 kHz |
 
-| Stat | Meaning | Restore with |
-|------|---------|--------------|
-| **Food** | hunger | **Feed** (+fish, catch + chomp animation) |
-| **Fun**  | happiness | **Play** (porpoising leap + beach ball, costs energy) |
-| **Rest** | energy | **Sleep** (regenerates while asleep) |
-| **Wash** | hygiene | **Wash** (back to 100%) |
-
-The dolphin's face and animation reflect its mood: happy hearts when content,
-Zzz while sleeping, a fish to chase while eating, grime when dirty, a frown when
-neglected. Tap **Sleep** to nap (the button becomes **Wake**); feeding wakes it.
-
-**Body shape** — the dolphin's build reacts to how you treat it:
-- **Feed a lot → fat.** Each feed adds weight and the belly visibly bulges rounder
-  ("… is looking chubby!").
-- **Play/train a lot → ripped.** Each Play builds muscle: the back and shoulders
-  bulk up, the dorsal fin grows taller, the flipper thickens and a muscle crease
-  shows on the flank ("… is looking ripped!").
-- They oppose each other — Play burns fat and builds muscle, Feed adds fat and
-  softens muscle, and both ease back toward average over time. Balance the two.
-
-**Poop** — every third feed the dolphin makes a mess: a poop drops to the sea
-floor and stays there. Messes foul the water (hygiene drops faster) and keep the
-dolphin grumpy until you tap **Wash**, which scrubs the tank clean and clears all
-poop. There's **no limit** — poop piles up across rows the longer you ignore it,
-and the water darkens with it: clear blue → murky brown → **near black** when it
-really stacks up. Wash snaps it back to clear blue.
-
-**Death by obesity** — overfeeding has consequences. Feeding an already-full
-dolphin packs on extra weight fast ("… is dangerously obese!"). Sustained very
-high weight builds *strain*; if it maxes out, the dolphin **dies of obesity** and
-floats belly-up. A death screen shows its level and age with a **New pet** button
-to start over. (Slim back down with **Play** before it's too late to avoid it.)
-
-## Leveling, skills & clock
-
-- **Level / XP** — every care action grants XP. A yellow XP bar sits under the
-  header and the **Lv** chip (top-right) shows the current level; filling the bar
-  levels up with a brief banner.
-- **Skills** — four skills train through use and grant bonuses:
-  **Acrobatics** (Play → more fun, cheaper energy), **Appetite** (Feed → more food),
-  **Grooming** (Wash → more fun), **Stamina** (Sleep → faster energy regen).
-- **Clock** — a live software clock shows `HH:MM` in the header. Tap the **Lv**
-  chip to open the info panel: full date + time, XP progress, the four skill bars,
-  and `H±` / `M±` buttons to set the clock. (The 1.47 board has no RTC chip, so the
-  time runs off the ESP32 system clock and is persisted to NVS — it resumes on
-  reboot but doesn't count time spent powered off.)
-
-## Hardware pinout (verified from Waveshare BSP)
+Verified pinout (from the Waveshare BSP):
 
 | Function | GPIO | Function | GPIO |
 |----------|------|----------|------|
@@ -83,56 +32,139 @@ to start over. (Slim back down with **Play** before it's too late to avoid it.)
 | LCD MISO | 3 | LCD CS | 14 |
 | LCD DC | 15 | LCD RST | 22 |
 | LCD Backlight | 23 | — | — |
-| Touch I2C SDA | 18 | Touch I2C SCL | 19 |
+| Touch SDA | 18 | Touch SCL | 19 |
 | Touch INT | 21 | Touch RST | 20 |
 
-Display: JD9853 on SPI2 @ 80 MHz, 172×320, color-inverted, column offset 34.
-Touch: AXS5106L on I2C0 @ 400 kHz, address 0x63.
+> ⚠️ This is **not** the ESP32-C6-Touch-LCD-1.69. That board uses an ST7789 +
+> CST816S on different pins and is **not** compatible with this firmware.
+
+---
+
+## Watch shell & navigation
+
+| Screen | What it shows | Gestures |
+|--------|---------------|----------|
+| **Watchface** (home) | Analog clock — moving hour/minute/second hands, tick marks, date | **Long-press → app drawer** |
+| **App drawer** | The TamaWatchy app tile | **Tap** tile → launch · **Long-press** → back to watchface |
+| **TamaWatchy** | The dolphin pet | **Long-press** background → back to watchface |
+
+The clock runs off the ESP32 system time (the board has no RTC chip) and is
+persisted to NVS, so it resumes on reboot. Set it from inside TamaWatchy
+(the **Lv** chip → info panel → `H±` / `M±`); the watchface updates to match.
+
+---
+
+## TamaWatchy — the dolphin pet
+
+### Care
+Four stats decay in real time; the dolphin's face and animations reflect its mood
+(hearts, Zzz, a fish to chase, grime, frowns):
+
+| Stat | Restore with | Notes |
+|------|--------------|-------|
+| **Food** | **Feed** | fish-catch + chomp animation |
+| **Fun** | **Play** | a porpoising leap with a bouncing beach ball; costs energy |
+| **Rest** | **Sleep** | regenerates while asleep (tap **Wake** to get up) |
+| **Wash** | **Wash** | scrubs the tank and clears poop |
+
+### Progression
+- **Levels & XP** — every care action grants XP; the **Lv** chip + a gold XP bar
+  track it, with a level-up banner.
+- **Skills** — four skills trained through use, each granting bonuses:
+  **Acrobatics** (Play), **Appetite** (Feed), **Grooming** (Wash), **Stamina**
+  (Sleep). Viewable as bars in the info panel.
+
+### Body shape
+- **Feed a lot → fat**: the belly visibly bulges rounder.
+- **Play/train a lot → ripped**: the back and shoulders bulk up, the dorsal fin
+  grows, and a muscle crease appears.
+- They oppose each other and drift back to average over time — balance the two.
+
+### Consequences
+- **Poop** — every third feed drops a poop on the sea floor. It piles up with **no
+  limit** and **fouls the water**: clear blue → murky brown → **near-black** as it
+  stacks up. **Wash** clears it.
+- **Death by obesity** — overfeeding an already-full dolphin packs on weight fast.
+  Sustained very high weight builds *strain*; max it out and the dolphin **dies**,
+  floating belly-up. A death screen offers **New pet** to start over.
+
+### First launch
+On the first TamaWatchy launch (empty save) an arcade-style **name picker** appears:
+`<` / `>` cycle the letter, **Add** appends, **Del** backspaces, **OK** confirms.
+
+---
 
 ## Build & flash
 
-This repo already contains an ESP-IDF v5.4 project. From the project root:
+This is a ready-to-build ESP-IDF project (target `esp32c6`).
 
 ```bash
-# 1. Activate ESP-IDF (adjust path to your install)
+# 1. Activate ESP-IDF (adjust to your install path)
 . ~/esp/esp-idf/export.sh
 
-# 2. Target is already esp32c6; build
+# 2. Build
+idf.py set-target esp32c6   # first time only
 idf.py build
 
-# 3. Flash + open the serial monitor (replace PORT, e.g. /dev/cu.usbmodem* on macOS)
-idf.py -p PORT flash monitor
+# 3. Flash + monitor (find PORT: ls /dev/cu.usbmodem* on macOS, /dev/ttyACM* on Linux)
+idf.py -p PORT flash monitor   # exit the monitor with Ctrl-]
 ```
 
-To find the port: `ls /dev/cu.usbmodem*` (macOS) or `ls /dev/ttyACM*` (Linux).
-Exit the monitor with `Ctrl-]`.
+The first build pulls managed components (LVGL, esp_lvgl_port, esp_lcd_touch) from
+the ESP Component Registry, so it needs network access. The display (JD9853) and
+touch (AXS5106L) drivers are vendored in-tree under `components/`.
 
-First build pulls managed components (LVGL, esp_lvgl_port, esp_lcd_touch) from the
-ESP Component Registry, so it needs network access. The display (JD9853) and touch
-(AXS5106L) drivers are vendored in-tree under `components/`.
+To reset to a factory-fresh watch (default time, no pet):
+
+```bash
+idf.py -p PORT erase-flash && idf.py -p PORT flash
+```
+
+---
 
 ## Project layout
 
 ```
 CMakeLists.txt                    top-level project
-partitions.csv                    4MB-safe table (3MB app partition)
+partitions.csv                    4 MB-safe table (3 MB app partition)
 sdkconfig.defaults                esp32c6 target, LVGL fonts, color-swap, flash size
+dependencies.lock                 pinned managed-component versions
 main/
   main.c                          SPI + panel + touch + LVGL bring-up, starts the watch shell
-  watch.c/.h                      watch shell: analog watchface + app drawer + navigation
+  watch.c/.h                      watch shell: analog watchface, app drawer, navigation
   clock.c/.h                      shared software clock (system time + NVS persistence)
   tamagotchi.c/.h                 TamaWatchy app: game logic, stats, UI, NVS, timers
   dolphin.c/.h                    software-drawn animated dolphin (LVGL canvas)
-components/esp_bsp/               trimmed Waveshare BSP: display(JD9853), touch, i2c, spi
-components/esp_lcd_jd9853/        JD9853 display driver (vendored from Waveshare demo)
-components/esp_lcd_touch_axs5106/ AXS5106L touch driver (vendored from Waveshare demo)
+components/esp_bsp/               trimmed Waveshare BSP: display (JD9853), touch, i2c, spi
+components/esp_lcd_jd9853/        JD9853 display driver (vendored)
+components/esp_lcd_touch_axs5106/ AXS5106L touch driver (vendored)
 ```
 
-## Notes
+---
 
-- Stat decay is tuned for a lively demo (noticeable within seconds–minutes), not
-  realism. Adjust the modulo intervals in `logic_timer_cb()` in
-  [main/tamagotchi.c](main/tamagotchi.c) to taste.
-- The pet auto-saves every ~20 s and on every action. Delete the NVS partition
-  (`idf.py erase-flash`) to start a fresh dolphin.
-- Built against ESP-IDF v5.4.1 / LVGL 8.4.
+## How it works
+
+- **Everything is drawn in code.** The dolphin is modelled as length "stations"
+  (back / belly / countershading lines) and filled as three coloured **triangle
+  strips** (dark dorsal cape → medium flank → pale belly). A 2D transform
+  (translate + rotate + vertical flip) lets it bob, bank through the play leap,
+  and float belly-up when dead. Only 3-point triangles are ever filled — LVGL's
+  software polygon fill corrupts memory past ~16 vertices.
+- **The watchface** uses LVGL line objects for the hands (recomputed each second)
+  and the dial, so it needs no framebuffer of its own.
+- **One screen, swapped content.** Watchface / drawer / app each build onto the
+  active LVGL screen; transitions tear down the previous screen's timers and
+  release the dolphin canvas before clearing it, so there are no dangling
+  pointers or leaked timers.
+- **Persistence** — the pet lives in NVS (namespace `pet`), the clock in NVS
+  (namespace `watch`); both are reusable across reboots.
+
+---
+
+## Credits & licensing
+
+- Display/touch drivers and BSP pin definitions are derived from Waveshare's
+  official **ESP32-C6-Touch-LCD-1.47** demo. The vendored `esp_lcd_jd9853` and
+  `esp_lcd_touch_axs5106` components carry Espressif's Apache-2.0 headers.
+- Built on [ESP-IDF](https://github.com/espressif/esp-idf) and
+  [LVGL](https://github.com/lvgl/lvgl).
