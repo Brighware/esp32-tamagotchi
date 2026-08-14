@@ -25,6 +25,7 @@
 #include "bsp_spi.h"
 #include "wifi.h"
 #include "watch.h"
+#include "sntp.h"
 
 #define EXAMPLE_DISPLAY_ROTATION 0
 #define EXAMPLE_LCD_H_RES (172)
@@ -108,7 +109,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(app_lvgl_init());
     wifi_start();
-
+    sntp_start();
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
     ESP_LOGI(TAG, "Starting TamaWatchy watch shell");
