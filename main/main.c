@@ -24,6 +24,7 @@
 #include "bsp_i2c.h"
 #include "bsp_spi.h"
 #include "watch.h"
+#include "ad_monitor.h"
 
 #define EXAMPLE_DISPLAY_ROTATION 0
 #define EXAMPLE_LCD_H_RES (172)
@@ -86,10 +87,12 @@ static esp_err_t app_lvgl_init(void)
     return ESP_OK;
 }
 
+
 void app_main(void)
 {
     /* NVS holds the persisted pet between power cycles */
     esp_err_t nvs_ret = nvs_flash_init();
+    init_ad_monitor();
     if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ESP_ERROR_CHECK(nvs_flash_init());
@@ -108,6 +111,7 @@ void app_main(void)
     ESP_ERROR_CHECK(app_lvgl_init());
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
+    exec_ad_monitor();
     ESP_LOGI(TAG, "Starting TamaWatchy watch shell");
     if (lvgl_port_lock(0)) {
         watch_start();

@@ -13,12 +13,13 @@
 #include "watch.h"
 #include "clock.h"
 #include "tamagotchi.h"
-
+#include <stdio.h>
 #include <math.h>
 #include <time.h>
 
 #include "lvgl.h"
 #include "esp_log.h"
+#include "ad_monitor.h"
 
 static const char *TAG = "watch";
 #define PI 3.14159265f
@@ -190,9 +191,17 @@ static void build_watchface(void)
 
     lv_obj_t *hint = lv_label_create(root);
     lv_label_set_text(hint, "hold for apps");
-    lv_obj_set_style_text_font(hint, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_font(hint, &lv_font_montserrat_8, 0);
     lv_obj_set_style_text_color(hint, lv_color_hex(0x6F8AA0), 0);
     lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 286);
+
+    lv_obj_t *batt = lv_label_create(root);
+    char buf[12];
+    sprintf(buf, "Bat: %dV", get_ad_voltage());
+    lv_label_set_text(batt, buf);
+    lv_obj_set_style_text_font(batt, &lv_font_montserrat_10, 0);
+    lv_obj_set_style_text_color(batt, lv_color_hex(0x6F8AA0), 0);
+    lv_obj_align(batt, LV_ALIGN_TOP_MID, 0, 6);
 
     s_wf_timer = lv_timer_create(watchface_update, 1000, NULL);
     watchface_update(NULL);
@@ -246,14 +255,14 @@ static void build_drawer(void)
     lv_obj_set_style_arc_width(body, 14, LV_PART_INDICATOR);
 
     lv_obj_t *name = lv_label_create(root);
-    lv_label_set_text(name, "TamaWatchy");
+    lv_label_set_text(name, "Tamagotchi");
     lv_obj_set_style_text_font(name, &lv_font_montserrat_16, 0);
     lv_obj_set_style_text_color(name, lv_color_hex(0xCDEBFF), 0);
     lv_obj_align(name, LV_ALIGN_TOP_MID, 0, 192);
 
     lv_obj_t *hint = lv_label_create(root);
     lv_label_set_text(hint, "tap to open  -  hold to go back");
-    lv_obj_set_style_text_font(hint, &lv_font_montserrat_12, 0);
+    lv_obj_set_style_text_font(hint, &lv_font_montserrat_8, 0);
     lv_obj_set_style_text_color(hint, lv_color_hex(0x6F8AA0), 0);
     lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -24);
 }

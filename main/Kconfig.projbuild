@@ -21,3 +21,4 @@ menu "SNTP Configuration"
     endchoice
 
 endmenu
+
