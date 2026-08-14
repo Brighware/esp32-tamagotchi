@@ -17,6 +17,8 @@
 #include "esp_sntp.h"
 #include <time.h>
 #include <sys/time.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "esp_err.h"
 #include "nvs.h"

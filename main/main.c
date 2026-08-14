@@ -32,6 +32,10 @@
 #define EXAMPLE_LCD_DRAW_BUFF_HEIGHT (50)
 #define EXAMPLE_LCD_DRAW_BUFF_DOUBLE (1)
 
+
+void vWatchTask( void *pvParameters );
+void vBatteryTask( void *pvParameters );
+
 static const char *TAG = "tamagotchi_main";
 
 static esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -92,12 +96,11 @@ void app_main(void)
 {
     /* NVS holds the persisted pet between power cycles */
     esp_err_t nvs_ret = nvs_flash_init();
-    init_ad_monitor();
     if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ESP_ERROR_CHECK(nvs_flash_init());
     }
-
+    init_ad_monitor();
     i2c_master_bus_handle_t i2c_bus = bsp_i2c_init();
     bsp_spi_init();
     bsp_display_init(&io_handle, &panel_handle, EXAMPLE_LCD_H_RES * EXAMPLE_LCD_DRAW_BUFF_HEIGHT * sizeof(uint16_t));
@@ -111,11 +114,24 @@ void app_main(void)
     ESP_ERROR_CHECK(app_lvgl_init());
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
-    exec_ad_monitor();
+
+    TaskHandle_t xBatteryTaskHandle = NULL;
+
+    xTaskCreate(vBatteryTask, "BATTERY TASK", 2048, NULL, 10, &xBatteryTaskHandle);
     ESP_LOGI(TAG, "Starting TamaWatchy watch shell");
+
     if (lvgl_port_lock(0)) {
         watch_start();
         lvgl_port_unlock();
+    }
+
+}
+
+void vBatteryTask( void *pvParameters )
+{
+    for(;;) {
+        exec_ad_monitor();
+        vTaskDelay(60000/ portTICK_PERIOD_MS);
     }
 
 }
