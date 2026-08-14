@@ -114,7 +114,6 @@ void app_main(void)
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
 
-
     TaskHandle_t xBatteryTaskHandle = NULL;
 
     xTaskCreate(vBatteryTask, "BATTERY TASK", 2048, NULL, 10, &xBatteryTaskHandle);

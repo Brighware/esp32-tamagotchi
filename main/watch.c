@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-
+#include "esp_lvgl_port.h"
 #include "lvgl.h"
 #include "esp_log.h"
 #include "ad_monitor.h"
@@ -29,6 +29,7 @@ static const char *TAG = "watch";
 #define CY 120
 #define R_FACE 80
 
+
 enum { SCR_WATCH = 0, SCR_DRAWER, SCR_TAMA };
 static int s_cur = -1;
 
@@ -37,7 +38,6 @@ static lv_timer_t *s_wf_timer;
 static lv_obj_t  *s_hand_h, *s_hand_m, *s_hand_s, *s_date;
 static lv_point_t s_ph[2], s_pm[2], s_ps[2];
 static lv_point_t s_tick[12][2];
-
 static void build_watchface(void);
 static void build_drawer(void);
 
@@ -81,6 +81,8 @@ static void screen_longpress_cb(lv_event_t *e)
         watch_go_home();
     }
 }
+
+
 
 /* ---- analog watchface ------------------------------------------------- */
 static void set_hand(lv_point_t *pts, lv_obj_t *line, float deg, int len, int tail)
@@ -275,4 +277,8 @@ void watch_start(void)
     lv_obj_add_event_cb(s_scr, screen_longpress_cb, LV_EVENT_LONG_PRESSED, NULL);
     /* TODO: Add event callbacks for other input events */
     build_watchface();
+
 }
+
+
+
