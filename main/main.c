@@ -23,7 +23,7 @@
 #include "bsp_touch.h"
 #include "bsp_i2c.h"
 #include "bsp_spi.h"
-
+#include "wifi.h"
 #include "watch.h"
 
 #define EXAMPLE_DISPLAY_ROTATION 0
@@ -107,10 +107,10 @@ void app_main(void)
     }
 
     ESP_ERROR_CHECK(app_lvgl_init());
+    wifi_start();
 
     bsp_display_brightness_init();
-    bsp_display_set_brightness(100);
-
+    bsp_display_set_brightness(70);
     ESP_LOGI(TAG, "Starting TamaWatchy watch shell");
     if (lvgl_port_lock(0)) {
         watch_start();
