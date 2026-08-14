@@ -18,7 +18,7 @@
 #include "nvs_flash.h"
 
 #include "esp_lvgl_port.h"
-
+#include "esp_sleep.h"
 #include "bsp_display.h"
 #include "bsp_touch.h"
 #include "bsp_i2c.h"
@@ -33,7 +33,6 @@
 #define EXAMPLE_LCD_DRAW_BUFF_DOUBLE (1)
 
 
-void vWatchTask( void *pvParameters );
 void vBatteryTask( void *pvParameters );
 
 static const char *TAG = "tamagotchi_main";
@@ -114,6 +113,7 @@ void app_main(void)
     ESP_ERROR_CHECK(app_lvgl_init());
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
+
 
     TaskHandle_t xBatteryTaskHandle = NULL;
 

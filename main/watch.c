@@ -273,5 +273,6 @@ void watch_start(void)
     clock_boot_init();
     s_scr = lv_scr_act();
     lv_obj_add_event_cb(s_scr, screen_longpress_cb, LV_EVENT_LONG_PRESSED, NULL);
+    /* TODO: Add event callbacks for other input events */
     build_watchface();
 }
