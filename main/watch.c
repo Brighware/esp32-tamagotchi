@@ -20,6 +20,7 @@
 #include "lvgl.h"
 #include "esp_log.h"
 #include "ad_monitor.h"
+#include <stdbool.h>
 
 static const char *TAG = "watch";
 #define PI 3.14159265f
@@ -35,11 +36,17 @@ static int s_cur = -1;
 
 static lv_obj_t  *s_scr;
 static lv_timer_t *s_wf_timer;
+static lv_timer_t *touch_timer;
 static lv_obj_t  *s_hand_h, *s_hand_m, *s_hand_s, *s_date;
 static lv_point_t s_ph[2], s_pm[2], s_ps[2];
 static lv_point_t s_tick[12][2];
 static void build_watchface(void);
 static void build_drawer(void);
+
+static bool display_timeout_flag;
+
+void my_touch_timer(lv_timer_t * timer);
+void screen_touch_cb(lv_event_t * e);
 
 /* ---- navigation ------------------------------------------------------- */
 static void teardown(void)
@@ -53,8 +60,8 @@ static void teardown(void)
     lv_obj_clean(s_scr);
 }
 
-static void go_watch_cb(lv_event_t *e) { LV_UNUSED(e); teardown(); build_watchface(); }
-static void go_drawer_cb(lv_event_t *e) { LV_UNUSED(e); teardown(); build_drawer(); }
+static void go_watch_cb(lv_event_t *e) { display_timeout_flag = false; LV_UNUSED(e); teardown(); build_watchface(); }
+static void go_drawer_cb(lv_event_t *e) { display_timeout_flag = false; LV_UNUSED(e); teardown(); build_drawer(); }
 
 static void open_tama_cb(lv_event_t *e)
 {
@@ -75,6 +82,7 @@ void watch_go_home(void)
  * aren't a full-screen clickable root, so the press reaches the screen) */
 static void screen_longpress_cb(lv_event_t *e)
 {
+    display_timeout_flag = false;
     LV_UNUSED(e);
     if (s_cur == SCR_TAMA) {
         ESP_LOGI(TAG, "long-press: exit app to watchface");
@@ -222,7 +230,7 @@ static void build_drawer(void)
     lv_obj_set_style_border_width(root, 0, 0);
     lv_obj_set_style_pad_all(root, 0, 0);
     lv_obj_set_style_bg_color(root, lv_color_hex(0x0E1726), 0);
-    lv_obj_clear_flag(root, LV_OBJ_FLAG_SCROLLABLE);
+    //lv_obj_clear_flag(root, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(root, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(root, go_watch_cb, LV_EVENT_LONG_PRESSED, NULL);
 
@@ -269,16 +277,60 @@ static void build_drawer(void)
     lv_obj_align(hint, LV_ALIGN_BOTTOM_MID, 0, -24);
 }
 
+
 /* ---- entry ------------------------------------------------------------ */
 void watch_start(void)
 {
+    display_timeout_flag = false;
+    static uint32_t user_data = 10;
+    touch_timer = lv_timer_create(my_touch_timer, 15000, &user_data);
     clock_boot_init();
     s_scr = lv_scr_act();
     lv_obj_add_event_cb(s_scr, screen_longpress_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(s_scr, screen_touch_cb, LV_EVENT_ALL, NULL);
     /* TODO: Add event callbacks for other input events */
     build_watchface();
 
 }
 
+void screen_touch_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    switch(code) {
+      case LV_EVENT_SCROLL:
+        lv_timer_reset(touch_timer);
+        display_timeout_flag = false;
+        break;
+      case LV_EVENT_CLICKED:
+        lv_timer_reset(touch_timer);
+        display_timeout_flag = false;
+        break;
+      case LV_EVENT_PRESSED:
+        lv_timer_reset(touch_timer);
+        display_timeout_flag = false;
+        break;
+      case LV_EVENT_GESTURE:
+        lv_timer_reset(touch_timer);
+        display_timeout_flag = false;
+        break;
+      default:
+        break;
+
+    }
+}
+
+void my_touch_timer(lv_timer_t * timer)
+{
+  display_timeout_flag = true;
+}
 
 
+void screen_scroll_cb(lv_event_t * e)
+{
+    ESP_LOGI(TAG, "Scroll: %s", e);
+}
+
+bool get_screen_timeout_flag(void)
+{
+  return((bool)display_timeout_flag);
+}

@@ -16,7 +16,7 @@
 #include "esp_log.h"
 #include "esp_check.h"
 #include "nvs_flash.h"
-
+#include "lvgl.h"
 #include "esp_lvgl_port.h"
 #include "esp_sleep.h"
 #include "bsp_display.h"
@@ -25,6 +25,8 @@
 #include "bsp_spi.h"
 #include "watch.h"
 #include "ad_monitor.h"
+#include <time.h>
+#include <stdbool.h>
 
 #define EXAMPLE_DISPLAY_ROTATION 0
 #define EXAMPLE_LCD_H_RES (172)
@@ -35,6 +37,7 @@
 
 void vBatteryTask( void *pvParameters );
 
+static bool display_on;
 static const char *TAG = "tamagotchi_main";
 
 static esp_lcd_panel_io_handle_t io_handle = NULL;
@@ -43,6 +46,19 @@ static esp_lcd_touch_handle_t touch_handle = NULL;
 
 static lv_display_t *lvgl_disp = NULL;
 static lv_indev_t *lvgl_touch_indev = NULL;
+static lv_timer_t *display_timer;
+
+void my_display_timer(lv_timer_t * timer)
+{
+  if(get_screen_timeout_flag() && display_on) {
+    bsp_display_set_brightness(0);
+    display_on = false;
+  }
+  else {
+    bsp_display_set_brightness(70);
+    display_on = true;
+  }
+}
 
 static esp_err_t app_lvgl_init(void)
 {
@@ -113,7 +129,9 @@ void app_main(void)
     ESP_ERROR_CHECK(app_lvgl_init());
     bsp_display_brightness_init();
     bsp_display_set_brightness(70);
-
+    display_on = true;
+    static uint32_t user_data = 10;
+    display_timer = lv_timer_create(my_display_timer, 1000, &user_data);
     TaskHandle_t xBatteryTaskHandle = NULL;
 
     xTaskCreate(vBatteryTask, "BATTERY TASK", 2048, NULL, 10, &xBatteryTaskHandle);
