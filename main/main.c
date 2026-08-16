@@ -40,6 +40,9 @@ void vBatteryTask( void *pvParameters );
 static bool display_on;
 static const char *TAG = "tamagotchi_main";
 
+static void SetDisplayOn(void);
+static void SetDisplayOff(void);
+
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
@@ -50,13 +53,12 @@ static lv_timer_t *display_timer;
 
 void my_display_timer(lv_timer_t * timer)
 {
-  if(get_screen_timeout_flag() && display_on) {
-    bsp_display_set_brightness(0);
-    display_on = false;
+  bool timeout_flag = get_screen_timeout_flag();
+  if( timeout_flag && display_on == true) {
+    SetDisplayOff();
   }
-  else {
-    bsp_display_set_brightness(70);
-    display_on = true;
+  else if ( timeout_flag == false && display_on == false) {
+    SetDisplayOn();
   }
 }
 
@@ -128,8 +130,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(app_lvgl_init());
     bsp_display_brightness_init();
-    bsp_display_set_brightness(70);
-    display_on = true;
+    SetDisplayOn();
     static uint32_t user_data = 10;
     display_timer = lv_timer_create(my_display_timer, 1000, &user_data);
     TaskHandle_t xBatteryTaskHandle = NULL;
@@ -150,5 +151,18 @@ void vBatteryTask( void *pvParameters )
         exec_ad_monitor();
         vTaskDelay(60000/ portTICK_PERIOD_MS);
     }
+
+}
+
+static void SetDisplayOn(void)
+{
+    bsp_display_set_brightness(70);
+    display_on = true;
+}
+
+static void SetDisplayOff(void)
+{
+    bsp_display_set_brightness(0);
+    display_on = false;
 
 }

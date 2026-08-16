@@ -314,6 +314,8 @@ void screen_touch_cb(lv_event_t * e)
         display_timeout_flag = false;
         break;
       default:
+//        lv_timer_reset(touch_timer);
+//        display_timeout_flag = false;
         break;
 
     }
