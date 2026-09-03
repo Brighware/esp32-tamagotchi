@@ -22,3 +22,19 @@ menu "SNTP Configuration"
 
 endmenu
 
+
+menu "Display Configuration"
+    config DISPLAY_ROTATION
+        int "Display Rotation"
+        default 0
+    config LCD_H_RES
+        int "LCD Horizontal Resolution"
+        
+    
+
+#define EXAMPLE_DISPLAY_ROTATION 0
+#define EXAMPLE_LCD_H_RES (172)
+#define EXAMPLE_LCD_V_RES (320)
+#define EXAMPLE_LCD_DRAW_BUFF_HEIGHT (50)
+#define EXAMPLE_LCD_DRAW_BUFF_DOUBLE (1)
+endmenu

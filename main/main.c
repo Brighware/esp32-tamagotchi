@@ -24,6 +24,7 @@
 #include "bsp_i2c.h"
 #include "bsp_spi.h"
 #include "watch.h"
+
 #include "ad_monitor.h"
 #include <time.h>
 #include <stdbool.h>
@@ -46,6 +47,7 @@ static void SetDisplayOff(void);
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
+static i2c_master_dev_handle_t dev_handle = NULL;
 
 static lv_display_t *lvgl_disp = NULL;
 static lv_indev_t *lvgl_touch_indev = NULL;
